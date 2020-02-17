@@ -1,15 +1,16 @@
 process.env["NTBA_FIX_319"] = 1; // Fix of 319 error
 
 require('dotenv').config();
-var TelegramBot = require("node-telegram-bot-api");
+const TelegramBot = require("node-telegram-bot-api");
+const cron = require('node-cron');
 
-var token = process.env.BOT_API;
-var bot = new TelegramBot(token, { polling: true });
+const token = process.env.BOT_API;
+const bot = new TelegramBot(token, { polling: true });
 
-var notes = [];
+const notes = [];
 
 bot.onText(/help/, function(msg, match) {
-  var userId = msg.from.id;
+  const userId = msg.from.id;
 
   console.log(`User ${userId} asked for help.`);
   bot.sendMessage(
@@ -19,9 +20,9 @@ bot.onText(/help/, function(msg, match) {
 });
 
 bot.onText(/remind (.+) at (.+)/, function(msg, match) {
-  var userId = msg.from.id;
-  var text = match[1];
-  var time = match[2];
+  const userId = msg.from.id;
+  const text = match[1];
+  const time = match[2];
 
   notes.push({ uid: userId, time: time, text: text });
 
@@ -29,16 +30,17 @@ bot.onText(/remind (.+) at (.+)/, function(msg, match) {
   bot.sendMessage(userId, `Nice! I will remind you ${text} at ${time} :)`);
 });
 
-setInterval(function() {
-  for (var i = 0; i < notes.length; i++) {
+cron.schedule('* * * * * *', () => {
+  for (let i = 0; i < notes.length; i++) {
     const curDate = new Date().getHours() + ":" + new Date().getMinutes();
+
     if (notes[i]["time"] === curDate) {
       console.log(`Sending reminder (${notes[i]["text"]} at ${notes[i]["time"]}) to ${notes[i]["uid"]}`);
       bot.sendMessage(
         notes[i]["uid"],
-        "Hey, you need: " + notes[i]["text"] + " right now."
+        `Hey, you need ${notes[i]["text"]} right now.`
       );
       notes.splice(i, 1);
     }
   }
-}, 1000);
+});
