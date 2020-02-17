@@ -10,7 +10,7 @@ const bot = new TelegramBot(token, { polling: true });
 
 const notes = [];
 
-bot.onText(/help/, function(msg, match) {
+bot.onText(/help/, msg => {
   const userId = msg.from.id;
 
   consoleMsg(`User ${userId} asked for help.`);
@@ -20,7 +20,7 @@ bot.onText(/help/, function(msg, match) {
   );
 });
 
-bot.onText(/remind (.+) at (.+)/, function(msg, match) {
+bot.onText(/remind (.+) at (.+)/, (msg, match) => {
   const userId = msg.from.id;
   const text = match[1];
   const time = match[2];
